@@ -1,6 +1,17 @@
 const express = require("express");
 const app = express();
+const morgan = require("morgan");
+
 app.use(express.json());
+
+morgan.token("body", function getBody(req) {
+  const body = JSON.stringify(req.body);
+
+  return body ? body : " ";
+});
+app.use(
+  morgan(":method :url :status :res[content-length] - :response-time ms :body"),
+);
 
 const generateId = () => String(Math.floor(Math.random() * 100000));
 
@@ -88,6 +99,12 @@ app.post("/api/persons", (req, res) => {
 
   res.json(person);
 });
+
+const unknownEndpoint = (request, response) => {
+  response.status(404).send({ error: "unknown endpoint" });
+};
+
+app.use(unknownEndpoint);
 
 const PORT = 3001;
 app.listen(PORT, () => {
