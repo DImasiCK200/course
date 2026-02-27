@@ -25,8 +25,10 @@ app.get("/", (req, res) => {
 app.get("/info", (req, res) => {
   const date = new Date();
 
-  res.send(
-    `<h1>Phonebook has info about ${persons.length} persons</h1><p>${date.toString()}</p>`,
+  Person.find({}).then((persons) =>
+    res.send(
+      `<h1>Phonebook has info about ${persons.length} persons</h1><p>${date.toString()}</p>`,
+    ),
   );
 });
 
@@ -35,21 +37,41 @@ app.get("/api/persons", (req, res) => {
 });
 
 app.get("/api/persons/:id", (req, res) => {
-  Person.findByIndex(req.params.id).then((person) => res.json(person));
+  Person.findById(req.params.id).then((person) => res.json(person));
 });
 
-app.delete("/api/persons/:id", (req, res) => {
-  const id = req.params.id;
-  persons = persons.filter((n) => n.id !== id);
-
-  res.status(204).end();
+app.delete("/api/persons/:id", (request, response, next) => {
+  Person.findByIdAndDelete(request.params.id)
+    .then((result) => {
+      response.status(204).end();
+    })
+    .catch((err) => next(err));
 });
 
-app.post("/api/persons", (req, res) => {
-  const body = req.body;
+app.put("/api/persons/:id", (request, response, next) => {
+  const { name, number } = request.body;
+
+  Person.findById(request.params.id)
+    .then((person) => {
+      if (!person) {
+        return response.status(404).end();
+      }
+
+      person.name = name;
+      person.number = number;
+
+      return person.save().then((updatedNote) => {
+        response.json(updatedNote);
+      });
+    })
+    .catch((err) => next(err));
+});
+
+app.post("/api/persons", (request, response, next) => {
+  const body = request.body;
 
   if (!body.name || !body.number) {
-    return res.status(400).json({
+    return response.status(400).json({
       error: `name or number missing`,
     });
   }
@@ -59,10 +81,15 @@ app.post("/api/persons", (req, res) => {
     number: String(body.number),
   });
 
-  person.save().then((result) => {
-    console.log(`added ${result.name} with number ${result.number} to phonebook`);
-    res.json(person);
-  });
+  person
+    .save()
+    .then((result) => {
+      console.log(
+        `added ${result.name} with number ${result.number} to phonebook`,
+      );
+      response.json(person);
+    })
+    .catch((err) => next(err));
 });
 
 const unknownEndpoint = (request, response) => {
@@ -70,6 +97,18 @@ const unknownEndpoint = (request, response) => {
 };
 
 app.use(unknownEndpoint);
+
+const errorHandler = (error, request, response, next) => {
+  console.error(error.message);
+
+  if (error.name === "CastError") {
+    return response.status(400).send({ error: "malformatted id" });
+  }
+
+  next(error);
+};
+
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
