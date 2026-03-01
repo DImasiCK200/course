@@ -9,7 +9,7 @@
   "scripts": {
     "start": "node index.js",
     "dev": "node --watch index.js",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "node --test",
     "build:ui": "rm -rf dist && cd ../part2-notes-frontend && npm run build && cp -r dist ../part3",
     "deploy:full": "npm run build:ui && git add . && git commit -m uibuild && git push",
     "lint": "eslint ."
@@ -17,6 +17,7 @@
   "dependencies": {
     "dotenv": "^17.3.1",
     "express": "^5.2.1",
+    "lodash": "^4.17.23",
     "mongodb": "^7.1.0",
     "mongoose": "^9.2.3"
   },
