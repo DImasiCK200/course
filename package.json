@@ -7,26 +7,27 @@
   "type": "commonjs",
   "main": "index.js",
   "scripts": {
-    "start": "NODE_ENV=production node index.js",
-    "dev": "NODE_ENV=development node --watch index.js",
-    "test": "NODE_ENV=test node --test",
+    "start": "cross-env NODE_ENV=production node index.js",
+    "dev": "cross-env NODE_ENV=development node --watch index.js",
+    "test": "cross-env NODE_ENV=test node --test",
     "build:ui": "rm -rf dist && cd ../part2-notes-frontend && npm run build && cp -r dist ../part3",
     "deploy:full": "npm run build:ui && git add . && git commit -m uibuild && git push",
     "lint": "eslint ."
   },
   "dependencies": {
+    "bcrypt": "^6.0.0",
     "cross-env": "^10.1.0",
     "dotenv": "^17.3.1",
     "express": "^5.2.1",
     "lodash": "^4.17.23",
     "mongodb": "^7.1.0",
-    "mongoose": "^9.2.3"
+    "mongoose": "^9.2.3",
+    "supertest": "^7.2.2"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@stylistic/eslint-plugin": "^5.9.0",
     "eslint": "^10.0.2",
-    "globals": "^17.3.0",
-    "supertest": "^7.2.2"
+    "globals": "^17.3.0"
   }
 }
